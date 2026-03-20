@@ -3,7 +3,8 @@ package com.jitendra.RideOrbit.controller;
 import com.jitendra.RideOrbit.dto.DriverLocationRequest;
 import com.jitendra.RideOrbit.dto.DriverLocationResponse;
 import com.jitendra.RideOrbit.exception.ResourceNotFoundException;
-import com.jitendra.RideOrbit.service.DriverLocationService;
+import com.jitendra.RideOrbit.service.LocationService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -14,9 +15,9 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class DriverLocationController {
 
-    private final DriverLocationService driverLocationService;
+    private final LocationService driverLocationService;
 
-    public DriverLocationController(DriverLocationService driverLocationService) {
+    public DriverLocationController(LocationService driverLocationService) {
         this.driverLocationService = driverLocationService;
     }
 
@@ -28,7 +29,7 @@ public class DriverLocationController {
      * @return Updated driver location response
      */
     @PostMapping("/update")
-    public ResponseEntity<?> updateDriverLocation(@RequestBody DriverLocationRequest request) {
+    public ResponseEntity<?> updateDriverLocation(@Valid @RequestBody DriverLocationRequest request) {
         DriverLocationResponse response = driverLocationService.saveDriverLocation(request);
         return ResponseEntity.ok(Map.of(
             "message", "Location updated successfully",
