@@ -46,34 +46,22 @@ public class DriverController {
     
     @PostMapping
     public ResponseEntity<DriverResponse> createDriver(@Valid @RequestBody DriverRequest request) {
-        try {
-            DriverResponse driver = driverService.create(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(driver);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        DriverResponse driver = driverService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(driver);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<DriverResponse> updateDriver(
             @PathVariable Long id,
             @Valid @RequestBody DriverRequest request) {
-        try {
-            DriverResponse driver = driverService.update(id, request);
-            return ResponseEntity.ok(driver);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        DriverResponse driver = driverService.update(id, request);
+        return ResponseEntity.ok(driver);
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDriver(@PathVariable Long id) {
-        try {
-            driverService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        driverService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
 
