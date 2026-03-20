@@ -54,26 +54,33 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public DriverLocationResponse saveDriverLocation(DriverLocationRequest request) {
         try {
-            // Add to geospatial index
+            LocalDateTime now = LocalDateTime.now();
+
+            // Add to the shared geospatial index.
+            // NO TTL is set on this key — it is shared by all drivers.
+            // Setting a TTL here would reset the expiry for every other driver
+            // in the geo set each time any single driver sends an update.
             Point point = new Point(request.getLongitude(), request.getLatitude());
             redisTemplate.opsForGeo().add(DRIVER_GEO_KEY, point, String.valueOf(request.getDriverId()));
-            
-            // Store location data in hash for quick retrieval
+
+            // Store metadata in a per-driver hash key
             String dataKey = DRIVER_DATA_KEY + request.getDriverId();
             redisTemplate.opsForHash().put(dataKey, "driverId", request.getDriverId());
             redisTemplate.opsForHash().put(dataKey, "latitude", request.getLatitude());
             redisTemplate.opsForHash().put(dataKey, "longitude", request.getLongitude());
-            redisTemplate.opsForHash().put(dataKey, "lastUpdated", LocalDateTime.now().toString());
-            
-            // Set expiration to 6 hours for inactive drivers
+            redisTemplate.opsForHash().put(dataKey, "lastUpdated", now.toString());
+
+            // Only the per-driver key gets a TTL.
+            // When this expires the driver is considered inactive/offline.
+            // The geo set entry is cleaned up explicitly via removeDriverLocation()
+            // when the driver logs out.
             redisTemplate.expire(dataKey, java.time.Duration.ofHours(6));
-            redisTemplate.expire(DRIVER_GEO_KEY, java.time.Duration.ofHours(6));
-            
+
             return DriverLocationResponse.builder()
                     .driverId(request.getDriverId())
                     .latitude(request.getLatitude())
                     .longitude(request.getLongitude())
-                    .lastUpdated(LocalDateTime.now())
+                    .lastUpdated(now)
                     .build();
                     
         } catch (Exception e) {
