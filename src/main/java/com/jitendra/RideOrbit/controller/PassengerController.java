@@ -40,34 +40,22 @@ public class PassengerController {
     
     @PostMapping
     public ResponseEntity<PassengerResponse> createPassenger(@Valid @RequestBody PassengerRequest request) {
-        try {
-            PassengerResponse passenger = passengerService.create(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(passenger);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        PassengerResponse passenger = passengerService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(passenger);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<PassengerResponse> updatePassenger(
             @PathVariable Long id,
             @Valid @RequestBody PassengerRequest request) {
-        try {
-            PassengerResponse passenger = passengerService.update(id, request);
-            return ResponseEntity.ok(passenger);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        PassengerResponse passenger = passengerService.update(id, request);
+        return ResponseEntity.ok(passenger);
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePassenger(@PathVariable Long id) {
-        try {
-            passengerService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        passengerService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
 

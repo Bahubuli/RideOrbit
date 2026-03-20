@@ -34,66 +34,42 @@ public class BookingController {
     
     @GetMapping("/passenger/{passengerId}")
     public ResponseEntity<List<BookingResponse>> getBookingsByPassenger(@PathVariable Long passengerId) {
-        try {
-            List<BookingResponse> bookings = bookingService.findByPassengerId(passengerId);
-            return ResponseEntity.ok(bookings);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        List<BookingResponse> bookings = bookingService.findByPassengerId(passengerId);
+        return ResponseEntity.ok(bookings);
     }
-    
+
     @GetMapping("/driver/{driverId}")
     public ResponseEntity<List<BookingResponse>> getBookingsByDriver(@PathVariable Long driverId) {
-        try {
-            List<BookingResponse> bookings = bookingService.findByDriverId(driverId);
-            return ResponseEntity.ok(bookings);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        List<BookingResponse> bookings = bookingService.findByDriverId(driverId);
+        return ResponseEntity.ok(bookings);
     }
-    
+
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request) {
-        try {
-            BookingResponse booking = bookingService.create(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(booking);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        BookingResponse booking = bookingService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(booking);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<BookingResponse> updateBooking(
             @PathVariable Long id,
             @Valid @RequestBody BookingRequest request) {
-        try {
-            BookingResponse booking = bookingService.update(id, request);
-            return ResponseEntity.ok(booking);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        BookingResponse booking = bookingService.update(id, request);
+        return ResponseEntity.ok(booking);
     }
-    
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long id,
             @RequestParam Booking.BookingStatus status) {
-        try {
-            BookingResponse booking = bookingService.updateStatus(id, status);
-            return ResponseEntity.ok(booking);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        BookingResponse booking = bookingService.updateStatus(id, status);
+        return ResponseEntity.ok(booking);
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
-        try {
-            bookingService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        bookingService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
 
