@@ -68,25 +68,29 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse create(BookingRequest request) {
         Passenger passenger = passengerRepository.findById(request.getPassengerId())
                 .orElseThrow(() -> new IllegalArgumentException("Passenger not found with id: " + request.getPassengerId()));
-        
+
         Driver driver = null;
         if (request.getDriverId() != null) {
-            driver = driverRepository.findById(request.getDriverId())
+            // Use a pessimistic write lock so no other transaction can read or
+            // modify this driver row between our availability check and the save.
+            // Without this lock, two concurrent booking requests for the same driver
+            // could both pass the availability check and double-book the driver.
+            driver = driverRepository.findByIdForUpdate(request.getDriverId())
                     .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + request.getDriverId()));
-            
+
             if (!driver.getIsAvailable()) {
                 throw new IllegalArgumentException("Driver with id " + request.getDriverId() + " is not available");
             }
         }
-        
+
         Booking booking = bookingMapper.toEntity(request, passenger, driver);
-        
-        // If driver is assigned, mark as unavailable
+
+        // If driver is assigned, mark as unavailable inside the same locked transaction
         if (driver != null) {
             driver.setIsAvailable(false);
             driverRepository.save(driver);
         }
-        
+
         Booking savedBooking = bookingRepository.save(booking);
         return bookingMapper.toResponse(savedBooking);
     }
@@ -95,23 +99,25 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse update(Long id, BookingRequest request) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
-        
+
         Passenger passenger = passengerRepository.findById(request.getPassengerId())
                 .orElseThrow(() -> new IllegalArgumentException("Passenger not found with id: " + request.getPassengerId()));
-        
+
         Driver driver = null;
         if (request.getDriverId() != null) {
-            driver = driverRepository.findById(request.getDriverId())
+            // Pessimistic lock — same reason as create(): availability check and
+            // update must be atomic to prevent concurrent double-booking.
+            driver = driverRepository.findByIdForUpdate(request.getDriverId())
                     .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + request.getDriverId()));
         }
-        
+
         // Handle driver availability when updating
         Driver previousDriver = booking.getDriver();
         if (previousDriver != null && !previousDriver.equals(driver)) {
             previousDriver.setIsAvailable(true);
             driverRepository.save(previousDriver);
         }
-        
+
         if (driver != null && !driver.equals(previousDriver)) {
             if (!driver.getIsAvailable()) {
                 throw new IllegalArgumentException("Driver with id " + request.getDriverId() + " is not available");
