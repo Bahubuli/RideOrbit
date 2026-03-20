@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(rm rideorbit.log test_output.txt test_api_full.ps1 test_driver_location_api.ps1 setup_and_test.sh test_driver_location_api.sh API_TEST_RESULTS_SUMMARY.md)",
+      "Bash(mkdir -p docs/bugs docs/plans docs/features docs/study-notes)",
+      "Bash(mv bug-fixes/* docs/bugs/)",
+      "Bash(rmdir bug-fixes:*)",
+      "Bash(mv PROJECT_REVIEW.md docs/plans/)",
+      "Bash(find d:/Code/RideOrbit -name *Test* -o -name *test*)",
+      "Bash(ls -la d:/Code/RideOrbit/*.md d:/Code/RideOrbit/*.sh d:/Code/RideOrbit/*.ps1)"
+    ]
+  }
+}

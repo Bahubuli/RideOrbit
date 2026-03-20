@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: rideorbit-postgres
+    environment:
+      POSTGRES_DB: rideorbit_db
+      POSTGRES_USER: rideorbit_user
+      POSTGRES_PASSWORD: rideorbit_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rideorbit_user -d rideorbit_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: rideorbit-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rideorbit-app
+    ports:
+      - "8080:8080"
+    environment:
+      # These override whatever is in .env inside the image
+      DB_URL: jdbc:postgresql://postgres:5432/rideorbit_db
+      DB_USERNAME: rideorbit_user
+      DB_PASSWORD: rideorbit_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  postgres_data:

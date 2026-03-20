@@ -1,0 +1,16 @@
+.git
+.gradle
+build
+bin
+out
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+docs
+*.md
+*.ps1
+*.sh
+!gradlew
+test_api.sh
