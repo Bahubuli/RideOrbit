@@ -39,7 +39,7 @@ public class LocationServiceImpl implements LocationService {
         try {
             LocalDateTime now = LocalDateTime.now();
 
-            // Add to geospatial index (shared key — NO TTL set here; see Bug-2 fix)
+            // Add to geospatial index (shared key — NO TTL set here)
             Point point = new Point(request.getLongitude(), request.getLatitude());
             redisTemplate.opsForGeo().add(DRIVER_GEO_KEY, point, String.valueOf(request.getDriverId()));
 
