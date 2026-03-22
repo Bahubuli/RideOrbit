@@ -29,6 +29,25 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rideorbit-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: rideorbit_user
+      RABBITMQ_DEFAULT_PASS: rideorbit_password
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI — http://localhost:15672
+      - "61613:61613"  # STOMP port — used by Spring WebSocket relay
+    volumes:
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
@@ -37,16 +56,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # These override whatever is in .env inside the image
+      # Database
       DB_URL: jdbc:postgresql://postgres:5432/rideorbit_db
       DB_USERNAME: rideorbit_user
       DB_PASSWORD: rideorbit_password
+      # Redis — caching only
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      # RabbitMQ — WebSocket broker
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: rideorbit_user
+      RABBITMQ_PASSWORD: rideorbit_password
+      RABBITMQ_STOMP_PORT: 61613
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
@@ -57,3 +84,4 @@ services:
 
 volumes:
   postgres_data:
+  rabbitmq_data:
