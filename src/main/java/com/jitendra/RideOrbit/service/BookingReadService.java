@@ -11,7 +11,6 @@ import java.util.Optional;
  */
 public interface BookingReadService {
     Optional<BookingResponse> findById(Long id);
-    List<BookingResponse> findAll();
     List<BookingResponse> findByPassengerId(Long passengerId);
     List<BookingResponse> findByDriverId(Long driverId);
 }

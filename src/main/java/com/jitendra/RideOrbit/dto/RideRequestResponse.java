@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -21,6 +22,7 @@ public class RideRequestResponse {
     private Long passengerId;
     private String pickupAddress;
     private String dropoffAddress;
+    private BigDecimal estimatedFare;    // fare estimate based on pickup-dropoff distance
     private int driversNotified;        // how many drivers received the notification
     private String status;              // SEARCHING or NO_DRIVERS_FOUND
     private LocalDateTime timestamp;

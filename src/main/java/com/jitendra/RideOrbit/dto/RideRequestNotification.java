@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -31,6 +32,7 @@ public class RideRequestNotification {
     private String dropoffAddress;
 
     private Double distanceToPickup;    // driver's current distance to pickup (km)
+    private BigDecimal estimatedFare;    // fare estimate so driver sees what the ride pays
 
     private LocalDateTime timestamp;
 }
