@@ -1,29 +1,12 @@
 package com.jitendra.RideOrbit.mapper;
 
-import com.jitendra.RideOrbit.dto.BookingRequest;
 import com.jitendra.RideOrbit.dto.BookingResponse;
 import com.jitendra.RideOrbit.entity.Booking;
-import com.jitendra.RideOrbit.entity.Driver;
-import com.jitendra.RideOrbit.entity.Passenger;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BookingMapper {
-    
-    public Booking toEntity(BookingRequest request, Passenger passenger, Driver driver) {
-        Booking.BookingStatus status = driver != null ? Booking.BookingStatus.CONFIRMED : Booking.BookingStatus.PENDING;
-        
-        return Booking.builder()
-                .passenger(passenger)
-                .driver(driver)
-                .pickupLocation(request.getPickupLocation())
-                .dropoffLocation(request.getDropoffLocation())
-                .fare(request.getFare())
-                .status(status)
-                .scheduledPickupTime(request.getScheduledPickupTime())
-                .build();
-    }
-    
+
     public BookingResponse toResponse(Booking booking) {
         return BookingResponse.builder()
                 .id(booking.getId())
@@ -42,19 +25,4 @@ public class BookingMapper {
                 .completedAt(booking.getCompletedAt())
                 .build();
     }
-    
-    public void updateEntity(Booking booking, BookingRequest request, Passenger passenger, Driver driver) {
-        booking.setPassenger(passenger);
-        booking.setDriver(driver);
-        booking.setPickupLocation(request.getPickupLocation());
-        booking.setDropoffLocation(request.getDropoffLocation());
-        booking.setFare(request.getFare());
-        booking.setScheduledPickupTime(request.getScheduledPickupTime());
-        
-        // Update status based on driver assignment
-        if (driver != null && booking.getStatus() == Booking.BookingStatus.PENDING) {
-            booking.setStatus(Booking.BookingStatus.CONFIRMED);
-        }
-    }
 }
-

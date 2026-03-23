@@ -45,16 +45,10 @@ public class LocationServiceImpl implements LocationService {
 
             // Store metadata in a per-driver hash key
             String dataKey = DRIVER_DATA_KEY + request.getDriverId();
-            boolean isNewEntry = !Boolean.TRUE.equals(redisTemplate.hasKey(dataKey));
             redisTemplate.opsForHash().put(dataKey, "driverId", request.getDriverId());
             redisTemplate.opsForHash().put(dataKey, "latitude", request.getLatitude());
             redisTemplate.opsForHash().put(dataKey, "longitude", request.getLongitude());
             redisTemplate.opsForHash().put(dataKey, "lastUpdated", now.toString());
-            // Set available=true only on first entry; subsequent location updates must not
-            // override an isAvailable=false that BookingServiceImpl wrote (driver on a booking)
-            if (isNewEntry) {
-                redisTemplate.opsForHash().put(dataKey, "isAvailable", "true");
-            }
 
             // Only the per-driver data key gets a TTL (6 h of inactivity = offline)
             redisTemplate.expire(dataKey, java.time.Duration.ofHours(6));
@@ -241,24 +235,6 @@ public class LocationServiceImpl implements LocationService {
                     && redisTemplate.opsForGeo().position(DRIVER_GEO_KEY, String.valueOf(driverId)) != null;
         } catch (Exception e) {
             return false;
-        }
-    }
-
-    /**
-     * Update the isAvailable flag in the driver's Redis hash.
-     * Called by BookingServiceImpl whenever a driver is assigned or released,
-     * so ride requests never need a DB cross-check for availability.
-     */
-    @Override
-    public void updateDriverAvailability(Long driverId, boolean isAvailable) {
-        try {
-            String dataKey = DRIVER_DATA_KEY + driverId;
-            // Only update if the driver is currently online — no point writing to a non-existent hash
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(dataKey))) {
-                redisTemplate.opsForHash().put(dataKey, "isAvailable", String.valueOf(isAvailable));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update driver availability: " + e.getMessage(), e);
         }
     }
 
