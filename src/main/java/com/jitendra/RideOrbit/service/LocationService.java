@@ -52,4 +52,15 @@ public interface LocationService {
      * @return true if driver is online, false otherwise
      */
     boolean isDriverOnline(Long driverId);
+
+    /**
+     * Update driver availability flag in Redis.
+     * Called by BookingServiceImpl whenever a driver is assigned or released.
+     * Keeps Redis in sync with DB so ride requests don't need a DB cross-check.
+     *
+     * @param driverId    - Driver ID
+     * @param isAvailable - true when free, false when on a booking
+     */
+    void updateDriverAvailability(Long driverId, boolean isAvailable);
+
 }
