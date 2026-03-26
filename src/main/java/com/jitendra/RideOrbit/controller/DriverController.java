@@ -1,8 +1,11 @@
 package com.jitendra.RideOrbit.controller;
 
+import com.jitendra.RideOrbit.dto.DriverLocationRequest;
+import com.jitendra.RideOrbit.dto.DriverLocationResponse;
 import com.jitendra.RideOrbit.dto.DriverRequest;
 import com.jitendra.RideOrbit.dto.DriverResponse;
 import com.jitendra.RideOrbit.service.DriverService;
+import com.jitendra.RideOrbit.service.LocationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,8 +18,9 @@ import java.util.List;
 @RequestMapping("/api/drivers")
 @RequiredArgsConstructor
 public class DriverController {
-    
+
     private final DriverService driverService;
+    private final LocationService locationService;
     
     @GetMapping
     public ResponseEntity<List<DriverResponse>> getAllDrivers() {
@@ -61,6 +65,22 @@ public class DriverController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDriver(@PathVariable Long id) {
         driverService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/online")
+    public ResponseEntity<DriverLocationResponse> goOnline(
+            @PathVariable Long id,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude) {
+        DriverLocationRequest request = new DriverLocationRequest(id, latitude, longitude);
+        DriverLocationResponse response = locationService.saveDriverLocation(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/offline")
+    public ResponseEntity<Void> goOffline(@PathVariable Long id) {
+        locationService.removeDriverLocation(id);
         return ResponseEntity.noContent().build();
     }
 }

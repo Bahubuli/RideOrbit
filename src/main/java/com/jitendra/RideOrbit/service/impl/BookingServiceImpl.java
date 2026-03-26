@@ -58,6 +58,15 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<BookingResponse> findActiveByDriverId(Long driverId) {
+        return bookingRepository.findByDriver_IdAndStatusIn(
+                driverId,
+                List.of(Booking.BookingStatus.CONFIRMED, Booking.BookingStatus.IN_PROGRESS)
+        ).map(bookingMapper::toResponse);
+    }
+
+    @Override
     public BookingResponse updateStatus(Long id, Booking.BookingStatus status) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));

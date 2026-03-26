@@ -13,5 +13,6 @@ public interface BookingReadService {
     Optional<BookingResponse> findById(Long id);
     List<BookingResponse> findByPassengerId(Long passengerId);
     List<BookingResponse> findByDriverId(Long driverId);
+    Optional<BookingResponse> findActiveByDriverId(Long driverId);
 }
 
