@@ -74,6 +74,22 @@ services:
     networks:
       - infra-net
 
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+          cpus: '0.1'
+    restart: unless-stopped
+    networks:
+      - infra-net
+
 volumes:
   postgres_data:
   rabbitmq_data:
