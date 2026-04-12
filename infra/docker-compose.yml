@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Shared infrastructure — start once, stays running across all app switches.
 # All apps connect via the 'infra-net' Docker network.
 # Each app manages its own DB/user credentials via its own env vars.

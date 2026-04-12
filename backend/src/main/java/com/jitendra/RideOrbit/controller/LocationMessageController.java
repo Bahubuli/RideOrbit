@@ -4,6 +4,7 @@ import com.jitendra.RideOrbit.dto.DriverLocationRequest;
 import com.jitendra.RideOrbit.dto.DriverLocationResponse;
 import com.jitendra.RideOrbit.service.BookingService;
 import com.jitendra.RideOrbit.service.LocationService;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Controller;
  * location is forwarded to the passenger on:
  *   /topic/passenger.{passengerId}.driver-location
  */
+@Hidden
 @Slf4j
 @Controller
 @RequiredArgsConstructor

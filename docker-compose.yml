@@ -1,5 +1,3 @@
-version: '3.8'
-
 # App only — infrastructure runs separately in ../infra/
 # Requires infra to be running first: cd infra && docker compose up -d
 #
