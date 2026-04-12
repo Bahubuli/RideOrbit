@@ -1,87 +1,38 @@
 version: '3.8'
 
+# App only — infrastructure runs separately in ../infra/
+# Requires infra to be running first: cd infra && docker compose up -d
+#
+# Start:   docker compose up -d --build
+# Stop:    docker compose down
+# Logs:    docker compose logs -f app
+
 services:
-  postgres:
-    image: postgres:17
-    container_name: rideorbit-postgres
-    environment:
-      POSTGRES_DB: rideorbit_db
-      POSTGRES_USER: rideorbit_user
-      POSTGRES_PASSWORD: rideorbit_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rideorbit_user -d rideorbit_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    container_name: rideorbit-redis
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rideorbit-rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: rideorbit_user
-      RABBITMQ_DEFAULT_PASS: rideorbit_password
-    ports:
-      - "5672:5672"    # AMQP port
-      - "15672:15672"  # Management UI — http://localhost:15672
-      - "61613:61613"  # STOMP port — used by Spring WebSocket relay
-    volumes:
-      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
-      - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   app:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     container_name: rideorbit-app
     ports:
       - "8080:8080"
-    environment:
-      # Database
-      DB_URL: jdbc:postgresql://postgres:5432/rideorbit_db
-      DB_USERNAME: rideorbit_user
-      DB_PASSWORD: rideorbit_password
-      # Redis — caching only
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      # RabbitMQ — WebSocket broker
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USERNAME: rideorbit_user
-      RABBITMQ_PASSWORD: rideorbit_password
-      RABBITMQ_STOMP_PORT: 61613
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+    env_file:
+      - .env    # exists on server only — never committed to git
+    deploy:
+      resources:
+        limits:
+          memory: 700M
+          cpus: '0.4'
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
       start_period: 60s
+    restart: unless-stopped
+    networks:
+      - infra-net
 
-volumes:
-  postgres_data:
-  rabbitmq_data:
+networks:
+  infra-net:
+    external: true
+    name: infra-net
